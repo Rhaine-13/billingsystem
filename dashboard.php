@@ -9,9 +9,11 @@ header("Expires: 0"); // Proxies.
 
 // Check if the user is logged in
 if (!isset($_SESSION['email'])) {
-    // If not logged in, redirect to the login page
+    error_log("Session email not set. Redirecting to login.");
     header("Location: loginpage.php");
     exit();
+} else {
+    error_log("Session email is set: " . $_SESSION['email']);
 }
 
 $querytotalTenant = "SELECT COUNT(*) AS total FROM tenant";

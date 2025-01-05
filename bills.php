@@ -1,3 +1,88 @@
+<?php 
+require('./database.php');
+session_start();
+
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+if (!isset($_SESSION['email'])) {
+    error_log("Session email not set. Redirecting to login.");
+    header("Location: loginpage.php");
+    exit();
+} else {
+    error_log("Session email is set: " . $_SESSION['email']);
+}
+
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+
+    $justTenantIdquery = 220035;
+    $DateToday = date('Y-m-d');
+    $Due = date('Y-m-d', strtotime($DateToday . ' + 5 days'));
+
+    $prev_read_elec = $_POST['previousreading'];
+    $pres_read_elec = $_POST['presentreading']; 
+    $total_elec = $_POST['electricity'];   
+    $prev_read_water = $_POST['waterpreviousreading'];     
+    $pres_read_water = $_POST['waterpresentreading']; 
+    $total_water = $_POST['water'];
+    $houserent = $_POST['house-rent'];
+    $internet = $_POST['internet'];
+    $gas = $_POST['gas'];
+    $trash = $_POST['trash'];
+    $total = $_POST['total'];
+
+    $prev_read_elec = preg_replace('/[^\d.]/', '', $prev_read_elec);
+    $pres_read_elec = preg_replace('/[^\d.]/', '', $pres_read_elec);
+    $total_elec = preg_replace('/[^\d.]/', '', $total_elec);
+    $prev_read_water = preg_replace('/[^\d.]/', '', $prev_read_water);  
+    $pres_read_water = preg_replace('/[^\d.]/', '', $pres_read_water);
+    $total_water = preg_replace('/[^\d.]/', '',  $total_water);
+    $houserent = preg_replace('/[^\d.]/', '', $houserent);
+    $internet = preg_replace('/[^\d.]/', '', $internet);
+    $gas = preg_replace('/[^\d.]/', '', $gas);
+    $trash = preg_replace('/[^\d.]/', '', $trash);
+    $total = preg_replace('/[^\d.]/', '', $total);
+
+
+    $prev_read_elec = intval($prev_read_elec);
+    $pres_read_elec = intval($pres_read_elec);
+    $total_elec = intval($total_elec);
+    $prev_read_water = intval($prev_read_water);  
+    $pres_read_water = intval($pres_read_water);
+    $total_water = intval($total_water);
+    $houserent = intval($houserent);
+    $internet = intval($internet);
+    $gas = intval($gas);
+    $trash = intval($trash);
+    $total = intval($total);
+
+    
+    $prev_read_elec = mysqli_real_escape_string($connection, $prev_read_elec);
+    $pres_read_elec = mysqli_real_escape_string($connection, $pres_read_elec);
+    $total_elec = mysqli_real_escape_string($connection, $total_elec);
+    $prev_read_water = mysqli_real_escape_string($connection, $prev_read_water);
+    $pres_read_water = mysqli_real_escape_string($connection, $pres_read_water);
+    $total_water = mysqli_real_escape_string($connection, $total_water);
+    $houserent = mysqli_real_escape_string($connection, $houserent);
+    $internet = mysqli_real_escape_string($connection, $internet);
+    $gas = mysqli_real_escape_string($connection, $gas);
+    $trash = mysqli_real_escape_string($connection, $trash);
+    $total = mysqli_real_escape_string($connection, $total);
+      
+    $query = "INSERT INTO bill (TenantId, ElectricityPrevious, ElectricityPresent, ElectricityTotal, WaterPrevious, WaterPresent, WaterTotal, MeterImageElectricity, MeterImageWater, HouseRent, Internet, Gas, TrashCollection, Total, CalculationDate, DueDate) 
+                            VALUES ('$justTenantIdquery', '$prev_read_elec', '$pres_read_elec', '$total_elec', '$prev_read_water', '$pres_read_water', '$total_water', '', '', '$houserent', '$internet', '$gas', '$trash', '$total', '$DateToday', '$Due')";
+
+    if(mysqli_query($connection, $query)){
+        header("Location: bills.php");
+        exit();
+    } else {
+        echo "ERROR: Could not execute $query. " . mysqli_error($connection);
+    }
+
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,638 +90,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Layout with CSS Grid</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        * {
-            font-family: 'SF Pro Display', sans-serif;
-            user-select: none;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            display: grid;
-            grid-template-columns: 220px 1fr; 
-            height: 100vh;
-            background-color: #dee3e9;
-        }
-
-        .sidenav-main {
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-            margin: 20px;
-            border-radius: 15px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidenav-header{
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin: 10px;
-            margin-bottom: 50px;
-        }
-
-        .sidenav-header img{
-            height: 30px;
-        }
-
-        .sidenav-header p {
-            font-weight: 500;
-            font-size: 11px;
-        }
-
-        .sidenav-body .sidenav-menus {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            cursor: pointer;
-        }
-
-        .sidenav-menus{
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .sidenav-menus img{
-            height: 20px;
-        }
-
-        .sidenav-menus{
-            margin: 0 10px 0 10px;
-            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-        }
-
-        .sidenav-menus:hover{
-            color: white;
-            background-color: #fe9210;
-        }
-
-        .sidenav-footer {
-            text-align: center;
-            font-size: 12px;
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 150px;
-        }
-
-        .sidenav-footer img{
-            border-radius: 50px;
-        }
-
-    .body-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    grid-template-rows: auto auto auto; 
-    gap: 20px; 
-    margin: 20px 20px 20px 0;
-}
-
-.content-box {
-    background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.box1, .box2, .box3 {
-    height: 200px;
-}
-
-.box4, .box5{
-    height: 155px; 
-}
-
-
-.box1 {
-    grid-column: 1; 
-    grid-row: 1;    
-    max-height: 300px; 
-    padding: 15px; 
-    overflow: auto; 
-}
-
-.box2 {
-    grid-column: 2; 
-    grid-row: 1;    
-    background-color: #423ed9;
-    color: white;
-}
-
-.box3 {
-    grid-column: 3; 
-    grid-row: 1;    
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.box4 {
-    grid-column: 1 / span 3;
-    grid-row: 2;
-    overflow: hidden; 
-}
-
-.box5 {
-    grid-column: 1 / span 3;
-    grid-row: 3;           
-}
-
-.summary-table {
-    width: 100%; 
-    border-spacing: 0; 
-    border-collapse: collapse; 
-    font-size: 12px;
-}
-
-.summary-table thead {
-    background-color: #f27e23;
-    color: white;
-    font-size: 11px;
-}
-
-.summary-table thead th:first-child {
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-}
-
-.summary-table thead th:last-child {
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
-
-.summary-table th, .summary-table td {
-    padding: 10px;
-    text-align: left;
-}
-
-.summary-table tbody {
-    display: block; 
-    max-height: calc(2 * 30px); 
-    overflow-y: auto; 
-}
-
-.summary-table tbody tr {
-    display: table; 
-    width: 100%; 
-}
-
-.summary-table thead, .summary-table tbody tr {
-    display: table; 
-    width: 100%; 
-}
-
-.summary-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9; 
-}
-
-.summary-table tbody tr:hover {
-    background-color: #f5f5f5; 
-}
-
-
-.panel-title{
-    font-size: 14px;
-    font-weight: 800;
-    margin-bottom: 2px;
-}
-
-.below-title{
-    font-size: 10px;
-    font-weight: 300;
-}
-
-.number-title{
-    font-size: 60px;
-    font-weight: 800;
-}
-
-.box2 {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; 
-    padding-bottom: 0; 
-    margin-bottom: 0; 
-}
-
-.box-2-bottom {
-    display: flex;
-    flex-direction: column;
-    margin: 0; 
-}
-
-.box-2-bottom img{
-    height: 30px;
-    width: 30px;
-}
-
-.box3 {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; 
-    padding-bottom: 0; 
-    margin-bottom: 0; 
-}
-
-.box-3-bottom {
-    display: flex;
-    flex-direction: column;
-    margin: 0; 
-}
-
-.box-3-bottom img{
-    height: 30px;
-    width: 30px;
-}
-
-.box-stretch-fit {
-    height: 100%;
-}
-
-.box-2-top,
-.box-2-bottom {
-    margin-bottom: 20px; 
-}
-
-.box-2-bottom:last-child {
-    margin-bottom: 0;
-}
-
-@media (max-width: 848px){
-    .box2 {
-    display: flex;
-    flex-direction: column;
-    gap: 0px; 
-    padding-bottom: 0; 
-    margin-bottom: 0; 
-}
-
-.number-title{
-    font-size: 40px;
-    font-weight: 800;
-}
-
-.summary-table {
-    width: 100%; 
-    border-spacing: 0; 
-    border-collapse: collapse; 
-    font-size: 12px;
-}
-
-.summary-table thead {
-    background-color: #f27e23;
-    color: white;
-    font-size: 11px;
-}
-
-.summary-table thead th:first-child {
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-}
-
-.summary-table thead th:last-child {
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
-
-.summary-table th, .summary-table td {
-    padding: 10px;
-    text-align: left;
-}
-
-.summary-table tbody {
-    display: block; 
-    max-height: calc(2 * 30px); 
-    overflow-y: auto; 
-}
-
-.summary-table tbody tr {
-    display: table; 
-    width: 100%; 
-}
-
-.summary-table thead, .summary-table tbody tr {
-    display: table; 
-    width: 100%; 
-}
-
-.summary-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9; 
-}
-
-.summary-table tbody tr:hover {
-    background-color: #f5f5f5; 
-}
-}
-
-@media (max-width: 500px) {
-    
-    body {
-        display: block; 
-    }
-
-    .sidenav-main {
-        display: flex;
-        flex-direction: row; 
-        justify-content: space-between;
-        padding: 10px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 1000;
-        border-radius: 0;
-    }
-
-    .sidenav-body {
-        display: flex;
-        flex-direction: row;
-        gap: 10px;
-        
-    }
-
-    .content-box {
-        width:95%; 
-        margin: 10px 10px 10px 10px;
-    }
-
-    .body-content {
-        display: block; 
-        margin: 20px 0 0 0; 
-    }
-
-    .sidenav-header p, .sidenav-menus p {
-        font-size: 12px;
-    }
-
-    .sidenav-footer {
-        font-size: 10px;
-        text-align: center;
-    }
-
-    .sidenav-body .sidenav-menus {
-        font-size: 14px;
-        padding: 5px 10px;
-    }
-
-    .number-title{
-    font-size: 60px;
-    font-weight: 800;
-}
-
-.summary-table {
-    width: 100%; 
-    border-spacing: 0; 
-    border-collapse: collapse; 
-    font-size: 12px;
-}
-
-.summary-table thead {
-    background-color: #f27e23;
-    color: white;
-    font-size: 11px;
-}
-
-.summary-table thead th:first-child {
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-}
-
-.summary-table thead th:last-child {
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
-
-.summary-table th, .summary-table td {
-    padding: 10px;
-    text-align: left;
-}
-
-.summary-table tbody {
-    display: block; 
-    max-height: calc(2 * 30px); 
-    overflow-y: auto; 
-}
-
-.summary-table tbody tr {
-    display: table; 
-    width: 100%; 
-}
-
-.summary-table thead, .summary-table tbody tr {
-    display: table; 
-    width: 100%; 
-}
-
-.summary-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9; 
-}
-
-.summary-table tbody tr:hover {
-    background-color: #f5f5f5; 
-}
-
-}
-
-#enrollmentChart {
-    width: 100% !important;
-    height: auto !important;
-}
-
-.profile-nav{
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; 
-            align-items: flex-start;
-}
-
-.calcu-row-button{
-    height: 25px;
-    width: 31.5px;
-    margin-bottom: 5px;
-    border-radius: 5px;
-    border: none;
-    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-    cursor: pointer;
-}
-
-.calcu-row-button:hover{
-    box-shadow: 5px 5 5px rgba(31, 31, 31, 0.7);
-    background-color: #ffa124;
-}
-
-.calcu-row-text{
-    height: 25px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    border: none;
-    padding-left: 5px;
-}
-
-.convert-row-button{
-    height: 35px;
-    width: 50px;     
-}
-
-.convert-row-text{
-    height: 35px;
-    padding-left: 5px;
-}
-
-
-.convert-center{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-}
-
-.bill-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-.bill-item label {
-    font-size: 14px; 
-    color: #555;
-    flex: 1;
-}
-
-.bill-item input {
-    width: 100px; 
-    padding: 5px; 
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px; 
-    color: #333;
-}
-
-.total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px; 
-    border-top: 2px solid #ddd;
-    padding-top: 10px;
-}
-
-.total label {
-    font-size: 16px; 
-    font-weight: bold;
-    color: #000;
-}
-
-.total input {
-    width: 100px;
-    padding: 5px; 
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-    color: #333;
-    background-color: #f9f9f9; 
-}
-
-.calculate-button {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px; 
-}
-
-.calculate-button:hover {
-    background-color: #0056b3; 
-}
-
-@keyframes pop {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.2);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-.pop {
-    animation: pop 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-}
-
-.prevpres{
-    display: flex;
-    flex-direction: row;
-}
-
-.prevpresmain{
-    display: flex;
-    flex-direction: column;
-}
-
-@keyframes arrowbounce{
-0%{
-    transform: translateX(0);
-}
-
-50%{
-    transform: translateX(5px);
-}
-
-100%{
-    transform: translateX(0);
-}
-}
-
-.arrowAnnimate {
-    animation: arrowbounce 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-}
-
-.profile-nav{
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; 
-            align-items: flex-start;
-}
-
-.sidenav-menus span {
-    text-decoration: none;
-    color: black;
-            font-size: 20px;
-            transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-        }
-
-        .sidenav-menus:hover span {
-            transform: scale(1.2); 
-            color: white;
-        }
-
-        .sidenav-menus p {
-            margin-left: 10px;
-            text-decoration: none;
-            color: black;
-        }
-
-        .sidenav-body a{
-            text-decoration: none;
-        }
-
-        .sidenav-menus p:hover {
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="./styles/bills.css">
 </head>
 <body>
     <div class="sidenav-main">
@@ -700,22 +154,22 @@
                     <div class="prevpresmain">
                     <div class="prevpres">
                         <p>Previous</p>
-                        <input type="number" id="previousreading" style="width: 50px;" class="value" value="123" readonly/>
+                        <input type="number" id="previousreading" name="previousreading" style="width: 50px;" class="value" value="123" readonly/>
                     </div>
 
                     <div class="prevpres">
                         <p>Present</p>
-                        <input type="number" id="presentreading" style="width: 50px;" class="value" value=""/>
+                        <input type="number" id="presentreading" name="presentreading" style="width: 50px;" class="value" value=""/>
                     </div>
                     </div>
 
                     <span class="material-icons arrow_forward">arrow_forward</span>
 
-                    <input type="text" id="firstcalculation" class="value" value="" readonly/>
+                    <input type="text" id="firstcalculation" name="firstcalculation" class="value" value="" readonly/>
 
                     <p>=</p>
 
-                    <input type="text" id="electricity" class="value" value="" readonly/>
+                    <input type="text" id="electricity" name="electricity" class="value" value="" readonly/>
                 </div>
                 <div class="bill-item">
                     <label for="Water">Water</label>
@@ -723,42 +177,42 @@
                     <div class="prevpresmain">
                     <div class="prevpres">
                         <p>Previous</p>
-                        <input type="number" id="waterpreviousreading" style="width: 50px;" class="value" value="123" readonly/>
+                        <input type="number" id="waterpreviousreading" name="waterpreviousreading" style="width: 50px;" class="value" value="123" readonly/>
                     </div>
 
                     <div class="prevpres">
                         <p>Present</p>
-                        <input type="number" id="waterpresentreading" style="width: 50px;" class="value" value=""/>
+                        <input type="number" id="waterpresentreading" name="waterpresentreading" style="width: 50px;" class="value" value=""/>
                     </div>
                     </div>
 
                     <span class="material-icons arrow_forward_water">arrow_forward</span>
 
-                    <input type="text" id="waterfirstcalculation" class="value" value="" readonly/>
+                    <input type="text" id="waterfirstcalculation" name="waterfirstcalculation" class="value" value="" readonly/>
 
                     <p>=</p>
 
-                    <input type="text" id="water" class="value" value="" readonly/>
+                    <input type="text" id="water" name="water" class="value" value="" readonly/>
                 </div>
                 <div class="bill-item">
                     <label for="house-rent">House Rent</label>
-                    <input type="text" id="house-rent" class="value" value="" />
+                    <input type="text" id="house-rent" name="house-rent" class="value" value="" />
                 </div>
                 <div class="bill-item">
                     <label for="internet">Internet</label>
-                    <input type="text" id="internet" class="value" value="" />
+                    <input type="text" id="internet" name="internet" class="value" value="" />
                 </div>
                 <div class="bill-item">
                     <label for="gas">Gas</label>
-                    <input type="text" id="gas" class="value" value="" />
+                    <input type="text" id="gas" name="gas" class="value" value="" />
                 </div>
                 <div class="bill-item">
                     <label for="trash">Trash Collection</label>
-                    <input type="text" id="trash" class="value" value="" />
+                    <input type="text" id="trash" name="trash" class="value" value="" />
                 </div>
                 <div class="total">
                     <label for="total">Total:</label>
-                    <input type="text" id="total" class="value" value="" readonly />
+                    <input type="text" id="total" name="total" class="value" value="" readonly />
                 </div>
                 <div class="bill-item">
                     <input type="submit" id="record-bill" class="record-bill" value="Record Bill" />
@@ -1140,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 var tra = document.getElementById('trash');
                 var total = document.getElementById('total');
             
-                if(!ele_prev.value || !ele_pres.value || !ele.value || !wat_prev || !wat_pres || !total.value){
+                if(!ele_prev.value || !ele_pres.value || !ele.value || !wat_prev || !wat_pres || total.value === 0 || total.value === "P 0" || ele.value === "P 0" || wat.value === "P 0"){
                     alert('Please fill all required fields!');
                     return;
                 }
