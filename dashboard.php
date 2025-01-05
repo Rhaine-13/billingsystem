@@ -545,9 +545,9 @@ $totalTenants = $row['total']; // Store the total count
             </a>
         </div>
         <div class="sidenav-footer">
-        <img src="<?php echo htmlspecialchars($tenantImage); ?>" style="height: 50px; width: 50px;">
+        <img src="data:image/jpeg;base64,<?php echo htmlspecialchars($_SESSION['tenantImage']); ?>" style="height: 50px; width: 50px;">
             <div class="profile-nav">
-                <p>Archie Coldovero</p>
+            <p><?php echo isset($_SESSION['FullName']) ? htmlspecialchars($_SESSION['FullName']) : ''; ?></p>
                 <p>Home owner</p>
             </div>
         </div>

@@ -693,6 +693,7 @@
         <div class="body-content">
             <div class="content-box box1">
                 <p class="panel-title">Compute Bills</p>
+                <form id="bills-form" class="bills-class" method="post" action="bills.php">
                 <div class="bill-item">
                     <label for="electricity">Electricity</label>
 
@@ -759,7 +760,11 @@
                     <label for="total">Total:</label>
                     <input type="text" id="total" class="value" value="" readonly />
                 </div>
+                <div class="bill-item">
+                    <input type="submit" id="record-bill" class="record-bill" value="Record Bill" />
+                </div>
             </div>
+    </form>
 
             <div class="content-box box2">
                 <div class="box-stretch-fit">
@@ -1059,10 +1064,6 @@ next.addEventListener('input', function(){
 });
 
 
-
-
-  
-
         const totalelectricityprocess = parseInt(document.getElementById('electricity').value.replace(/[^0-9.-]+/g, "")) || 0;
     const totalwaterprocess = parseInt(document.getElementById('water').value.replace(/[^0-9.-]+/g, "")) || 0;
     const houseRent = parseInt(document.getElementById('house-rent').value.replace(/[^0-9.-]+/g, "")) || 0;
@@ -1122,6 +1123,33 @@ document.addEventListener('DOMContentLoaded', function(){
     });
     
 });
+
+        document.querySelector('.record-bill').addEventListener('click', function(event){
+            event.preventDefault();
+
+            
+                var ele_prev = document.getElementById('previousreading');
+                var ele_pres = document.getElementById('presentreading');
+                var ele = document.getElementById('electricity');
+                var wat_prev = document.getElementById('waterpreviousreading');
+                var wat_pres = document.getElementById('waterpresentreading');
+                var wat = document.getElementById('water');
+                var hou_rent = document.getElementById('house-rent');
+                var inter = document.getElementById('internet');
+                var gas = document.getElementById('gas');
+                var tra = document.getElementById('trash');
+                var total = document.getElementById('total');
+            
+                if(!ele_prev.value || !ele_pres.value || !ele.value || !wat_prev || !wat_pres || !total.value){
+                    alert('Please fill all required fields!');
+                    return;
+                }
+            
+                if(confirm("Are you sure you want to record this?")){
+                    const sub = document.getElementById('bills-form');
+                sub.submit();
+                }
+        });
 
 
             </script>

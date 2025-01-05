@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $passwordInput = mysqli_real_escape_string($connection, $_POST['passwordInput']);
 
     // Prepare the SQL statement to prevent SQL injection
-    $sql = "SELECT Password FROM tenant WHERE Email = ?";
+    $sql = "SELECT Password, FullName, tenantImage FROM tenant WHERE Email = ?";
     $stmt = $connection->prepare($sql);
     
     if ($stmt) {
@@ -22,16 +22,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         // Check if the email exists
         if ($stmt->num_rows > 0) {
-            // Bind the result to a variable
-            $stmt->bind_result($hashedPassword);
+            // Bind the result to variables
+            $stmt->bind_result($hashedPassword, $fullName, $tenantImage);
             $stmt->fetch();
             
             // Verify the password
             if (password_verify($passwordInput, $hashedPassword)) {
                 // Password is correct, redirect to dashboard
                 $_SESSION['email'] = $email; // Store email in session
-                $_SESSION['Password'] = $row['Password'];
-                $_SESSION['FullName'] = $row['FullName'];
+                $_SESSION['Password'] = $hashedPassword; // Store hashed password in session
+                $_SESSION['FullName'] = $fullName; // Store full name in session
+                $_SESSION['tenantImage'] = base64_encode($tenantImage); // Store image in session as base64
 
                 header("Location: dashboard.php");
                 exit();
