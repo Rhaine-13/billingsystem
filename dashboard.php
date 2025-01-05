@@ -1,9 +1,26 @@
 <?php
-session_start();
 require('./database.php');
+session_start();
 
+// Prevent caching
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+header("Pragma: no-cache"); // HTTP 1.0.
+header("Expires: 0"); // Proxies.
+
+// Check if the user is logged in
+if (!isset($_SESSION['email'])) {
+    // If not logged in, redirect to the login page
+    header("Location: loginpage.php");
+    exit();
+}
+
+$querytotalTenant = "SELECT COUNT(*) AS total FROM tenant";
+$sqltotalTenant = mysqli_query($connection, $querytotalTenant);
+$row = mysqli_fetch_assoc($sqltotalTenant);
+$totalTenants = $row['total']; // Store the total count
+
+// The rest of your dashboard code goes here
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -520,11 +537,12 @@ require('./database.php');
                 <p>Settings</p>
             </div>
             </a>
-
+            <a href="logout.php">
             <div class="sidenav-menus">
                 <span class="material-icons">logout</span>
                 <p>Logout</p>
             </div>
+            </a>
         </div>
         <div class="sidenav-footer">
         <img src="<?php echo htmlspecialchars($tenantImage); ?>" style="height: 50px; width: 50px;">
@@ -549,7 +567,7 @@ require('./database.php');
                         <p class="below-title">View your tenants total count</p>
                     </div>
                     <div class="box-2-bottom">
-                        <p class="number-title">01</p>
+                        <p class="number-title"><?php echo $totalTenants; ?></p>
                         <img src="assets/tenant.png" alt="">
                     </div>
                 </div>

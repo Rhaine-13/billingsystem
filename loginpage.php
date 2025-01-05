@@ -243,6 +243,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if(pass !== confpass){
         document.getElementById('password').style.borderColor = 'red';
         document.getElementById('confirmpassword').style.borderColor = 'red';
+
+        
+
         document.getElementById('modal-message').innerText = "Passwords do not match!";
         document.getElementById('custom-alert-modal').style.display = 'block';
         event.preventDefault();

@@ -30,6 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (password_verify($passwordInput, $hashedPassword)) {
                 // Password is correct, redirect to dashboard
                 $_SESSION['email'] = $email; // Store email in session
+                $_SESSION['Password'] = $row['Password'];
+                $_SESSION['FullName'] = $row['FullName'];
+
                 header("Location: dashboard.php");
                 exit();
             } else {

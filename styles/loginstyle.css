@@ -492,7 +492,7 @@ background-color: white;
     justify-content: center; 
     text-align: left;
     padding: 10px;
-    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0)-in-out;
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 }
 
 .second-block:hover{
@@ -646,4 +646,14 @@ input[type="checkbox"], input[type="submit"] {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+}
+
+@keyframes movingTextbox {
+    0% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+}
+
+.animatedTextbox {
+    animation: movingTextbox 0.5s ease-in-out;
 }

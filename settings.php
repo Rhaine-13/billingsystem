@@ -607,11 +607,12 @@
     <p>Settings</p>
 </div>
 </a>
-
-<div class="sidenav-menus">
-    <span class="material-icons">logout</span>
-    <p>Logout</p>
-</div>
+<a href="logout.php">
+            <div class="sidenav-menus">
+                <span class="material-icons">logout</span>
+                <p>Logout</p>
+            </div>
+            </a>
 </div>
         <div class="sidenav-footer">
             <img src="assets/tenant.png" alt="">
