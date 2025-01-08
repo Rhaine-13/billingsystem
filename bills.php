@@ -82,7 +82,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
 }
 
-$queryTenants = "SELECT * FROM bill";
+$queryTenants = "SELECT t.TenantId, t.FullName FROM tenant t RIGHT JOIN bill b ON t.TenantId = b.TenantId";
 $sqlTenants = mysqli_query($connection, $queryTenants);
 
 
@@ -151,14 +151,12 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
         <div class="body-content">
             <div class="content-box box1">
             <p class="panel-title">Compute Bills</p>
-                <div class="bill-item">
+            <div class="bill-item">
                     <label for="house-rent">House Rent</label>
                     <select id="select-tenant" name="select-tenant" class="select-tenant" value="">
                     <option value="nothing">Select Tenant</option>   
                         <?php while($results = mysqli_fetch_array($sqlTenants)) { ?>
-                            <option value="<?php echo $results['TenantId']; ?>" data-electricity-prev="<?php echo $results['ElectricityPrevious']; ?>" data-electricity-pres="<?php echo $results['ElectricityPresent']; ?>" data-water-prev="<?php echo $results['WaterPrevious']; ?>" data-water-pres="<?php echo $results['WaterPresent']; ?>">
-    <?php echo $results['TenantId']; ?>
-</option>
+                        <option value="<?php echo $results['TenantId']; ?>"><?php echo $results['TenantId'] . ' - ' . $results['FullName']; ?></option>
                         <?php } ?>
                     </select>
                 </div>
@@ -473,27 +471,23 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
         <script>
 
 document.getElementById('select-tenant').addEventListener('change', function() {
-    var TenantId = this.value;
-    if (TenantId !== 'nothing') {
-        fetch('get_tenant_bills.php?TenantId=' + TenantId)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
+            var TenantId = this.value;
+            if (TenantId !== 'nothing') {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'get_tenant_bills.php?TenantId=' + TenantId, true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
                 // Set the values in the input fields
                 document.getElementById('previousreading').value = data.ElectricityPrevious || '';
                 document.getElementById('presentreading').value = data.ElectricityPresent || '';
                 document.getElementById('waterpreviousreading').value = data.WaterPrevious || '';
                 document.getElementById('waterpresentreading').value = data.WaterPresent || '';
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }
-});
+            }
+                };
+                xhr.send();
+            }
+        });
 
 document.addEventListener('DOMContentLoaded', function(){
 
@@ -634,7 +628,7 @@ document.querySelector('.record-bill').addEventListener('click', async function(
     var tra = document.getElementById('trash');
     var total = document.getElementById('total');
 
-    if (!ele_prev.value || !ele_pres.value || !ele.value || !wat_prev || !wat_pres || total.value === 0 || total.value === "P 0" || ele.value === "P 0" || wat.value === "P 0") {
+    if (!ele_pres.value || !ele.value || !wat_pres || total.value === 0 || total.value === "P 0" || ele.value === "P 0" || wat.value === "P 0") {
         alert('Please fill all required fields!');
         return;
     }
