@@ -82,6 +82,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
 }
 
+$queryTenants = "SELECT * FROM bill";
+$sqlTenants = mysqli_query($connection, $queryTenants);
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -146,7 +150,18 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
         <div class="body-content">
             <div class="content-box box1">
-                <p class="panel-title">Compute Bills</p>
+            <p class="panel-title">Compute Bills</p>
+                <div class="bill-item">
+                    <label for="house-rent">House Rent</label>
+                    <select id="select-tenant" name="select-tenant" class="select-tenant" value="">
+                    <option value="nothing">Select Tenant</option>   
+                        <?php while($results = mysqli_fetch_array($sqlTenants)) { ?>
+                            <option value="<?php echo $results['TenantId']; ?>" data-electricity-prev="<?php echo $results['ElectricityPrevious']; ?>" data-electricity-pres="<?php echo $results['ElectricityPresent']; ?>" data-water-prev="<?php echo $results['WaterPrevious']; ?>" data-water-pres="<?php echo $results['WaterPresent']; ?>">
+    <?php echo $results['TenantId']; ?>
+</option>
+                        <?php } ?>
+                    </select>
+                </div>
                 <form id="bills-form" class="bills-class" method="post" action="bills.php">
                 <div class="bill-item">
                     <label for="electricity">Electricity</label>
@@ -154,7 +169,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                     <div class="prevpresmain">
                     <div class="prevpres">
                         <p>Previous</p>
-                        <input type="number" id="previousreading" name="previousreading" style="width: 50px;" class="value" value="123" readonly/>
+                        <input type="number" id="previousreading" name="previousreading" style="width: 50px;" class="value" value="" readonly/>
                     </div>
 
                     <div class="prevpres">
@@ -177,7 +192,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                     <div class="prevpresmain">
                     <div class="prevpres">
                         <p>Previous</p>
-                        <input type="number" id="waterpreviousreading" name="waterpreviousreading" style="width: 50px;" class="value" value="123" readonly/>
+                        <input type="number" id="waterpreviousreading" name="waterpreviousreading" style="width: 50px;" class="value" value="" readonly/>
                     </div>
 
                     <div class="prevpres">
@@ -456,6 +471,30 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
         </div>    
         
         <script>
+
+document.getElementById('select-tenant').addEventListener('change', function() {
+    var TenantId = this.value;
+    if (TenantId !== 'nothing') {
+        fetch('get_tenant_bills.php?TenantId=' + TenantId)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Set the values in the input fields
+                document.getElementById('previousreading').value = data.ElectricityPrevious || '';
+                document.getElementById('presentreading').value = data.ElectricityPresent || '';
+                document.getElementById('waterpreviousreading').value = data.WaterPrevious || '';
+                document.getElementById('waterpresentreading').value = data.WaterPresent || '';
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function(){
 
        function calculateTotal() {
@@ -578,32 +617,50 @@ document.addEventListener('DOMContentLoaded', function(){
     
 });
 
-        document.querySelector('.record-bill').addEventListener('click', function(event){
-            event.preventDefault();
 
-            
-                var ele_prev = document.getElementById('previousreading');
-                var ele_pres = document.getElementById('presentreading');
-                var ele = document.getElementById('electricity');
-                var wat_prev = document.getElementById('waterpreviousreading');
-                var wat_pres = document.getElementById('waterpresentreading');
-                var wat = document.getElementById('water');
-                var hou_rent = document.getElementById('house-rent');
-                var inter = document.getElementById('internet');
-                var gas = document.getElementById('gas');
-                var tra = document.getElementById('trash');
-                var total = document.getElementById('total');
-            
-                if(!ele_prev.value || !ele_pres.value || !ele.value || !wat_prev || !wat_pres || total.value === 0 || total.value === "P 0" || ele.value === "P 0" || wat.value === "P 0"){
-                    alert('Please fill all required fields!');
-                    return;
-                }
-            
-                if(confirm("Are you sure you want to record this?")){
-                    const sub = document.getElementById('bills-form');
-                sub.submit();
-                }
-        });
+
+document.querySelector('.record-bill').addEventListener('click', async function(event) {
+    event.preventDefault();
+
+    var ele_prev = document.getElementById('previousreading');
+    var ele_pres = document.getElementById('presentreading');
+    var ele = document.getElementById('electricity');
+    var wat_prev = document.getElementById('waterpreviousreading');
+    var wat_pres = document.getElementById('waterpresentreading');
+    var wat = document.getElementById('water');
+    var hou_rent = document.getElementById('house-rent');
+    var inter = document.getElementById('internet');
+    var gas = document.getElementById('gas');
+    var tra = document.getElementById('trash');
+    var total = document.getElementById('total');
+
+    if (!ele_prev.value || !ele_pres.value || !ele.value || !wat_prev || !wat_pres || total.value === 0 || total.value === "P 0" || ele.value === "P 0" || wat.value === "P 0") {
+        alert('Please fill all required fields!');
+        return;
+    }
+
+    if (confirm("Are you sure you want to record this?")) {
+        const formData = new FormData(document.getElementById('bills-form'));
+        
+        try {
+            const response = await fetch('bills.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("Recorded Successfully");
+            } else {
+                const errorText = await response.text();
+                console.error("Error:", errorText);
+                alert("There was an error recording the bill.");
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert("There was a network error.");
+        }
+    }
+});
 
 
             </script>
