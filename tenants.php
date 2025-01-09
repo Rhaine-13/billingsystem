@@ -1,3 +1,10 @@
+<?php
+require('./database.php');
+
+$queryTenants = "SELECT * FROM tenant";
+$sqlTenants = mysqli_query($connection, $queryTenants);
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -970,150 +977,16 @@
                         </tr>
                     <thead>
                     <tbody>
+                        <?php while($results = mysqli_fetch_array($sqlTenants)) { ?>
                         <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
+                        <td><?php echo $results['TenantId']; ?></td>
+                            <td><?php echo $results['FullName']; ?></td>
+                            <td><?php echo $results['Email']; ?></td>
+                            <td><?php echo $results['PhoneNumber']; ?></td>
+                            <td><?php echo $results['Location']; ?></td>
+                            <td><?php echo $results['Status']; ?></td>
                         </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>

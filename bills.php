@@ -82,9 +82,26 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
 }
 
-$queryTenants = "SELECT t.TenantId, t.FullName FROM tenant t RIGHT JOIN bill b ON t.TenantId = b.TenantId";
+$queryTenants = "
+    SELECT t.TenantId, t.FullName, MAX(b.CalculationDate) AS LatestCalculationDate
+    FROM tenant t
+    LEFT JOIN bill b ON t.TenantId = b.TenantId
+    GROUP BY t.TenantId, t.FullName
+";
 $sqlTenants = mysqli_query($connection, $queryTenants);
 
+
+$queryBill = "SELECT b.TenantId, b.Total, b.BillId, b.DueDate, b.CalculationDate
+FROM bill b
+JOIN (
+    SELECT TenantId, MAX(CalculationDate) AS MaxDate
+    FROM bill
+    GROUP BY TenantId
+) AS latest ON b.TenantId = latest.TenantId AND b.CalculationDate = latest.MaxDate;";
+$sqlBill = mysqli_query($connection ,$queryBill);
+
+$queryAllBill = "SELECT * FROM bill";
+$sqlAllBill = mysqli_query($connection, $queryAllBill);
 
 ?>
 <!DOCTYPE html>
@@ -167,7 +184,7 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                     <div class="prevpresmain">
                     <div class="prevpres">
                         <p>Previous</p>
-                        <input type="number" id="previousreading" name="previousreading" style="width: 50px;" class="value" value="" readonly/>
+                        <input type="number" id="previousreading" name="previousreading" style="width: 50px;" class="value" value=""/>
                     </div>
 
                     <div class="prevpres">
@@ -190,7 +207,7 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                     <div class="prevpresmain">
                     <div class="prevpres">
                         <p>Previous</p>
-                        <input type="number" id="waterpreviousreading" name="waterpreviousreading" style="width: 50px;" class="value" value="" readonly/>
+                        <input type="number" id="waterpreviousreading" name="waterpreviousreading" style="width: 50px;" class="value" value=""/>
                     </div>
 
                     <div class="prevpres">
@@ -390,39 +407,21 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                 <table class="summary-table">
                     <thead>
                         <tr>
-                            <th>Tenant Name</th>
-                            <th>Email</th>
-                            <th>Contact Number</th>
-                            <th>Current Balance</th>
-                            <th>Total Bill</th>
+                            <th>Tenant ID</th>
+                            <th>Bill ID</th>
+                            <th>Total</th>
                             <th>Due Date</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
+                    <?php while($results = mysqli_fetch_array($sqlBill)) { ?>
+                            <tr>
+                                <td><?php echo $results['TenantId']; ?></td>
+                                <td><?php echo $results['BillId']; ?></td>
+                                <td><?php echo 'P ' . $results['Total']; ?></td>
+                                <td><?php echo $results['DueDate']; ?></td>
+                            </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>
@@ -439,30 +438,14 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                         </tr>
                     <thead>
                     <tbody>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
+                    <?php while($results = mysqli_fetch_array($sqlAllBill)) { ?>
+                            <tr>
+                                <td><?php echo $results['TenantId']; ?></td>
+                                <td><?php echo $results['BillId']; ?></td>
+                                <td><?php echo 'P ' . $results['Total']; ?></td>
+                                <td><?php echo $results['DueDate']; ?></td>
+                            </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>

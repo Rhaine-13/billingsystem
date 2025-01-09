@@ -22,6 +22,12 @@ $row = mysqli_fetch_assoc($sqltotalTenant);
 $totalTenants = $row['total']; // Store the total count
 
 // The rest of your dashboard code goes here
+
+
+
+$queryAllBillASC = "SELECT * FROM bill ORDER BY BillId DESC";
+$sqlAllBillASC = mysqli_query($connection, $queryAllBillASC);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -593,39 +599,23 @@ $totalTenants = $row['total']; // Store the total count
                 <table class="summary-table">
                     <thead>
                         <tr>
-                            <th>Tenant Name</th>
-                            <th>Email</th>
-                            <th>Contact Number</th>
-                            <th>Current Balance</th>
-                            <th>Total Bill</th>
+                            <th>Bill ID</th>
+                            <th>Tenant ID</th>
+                            <th>Total</th>
+                            <th>Calculation Date</th>
                             <th>Due Date</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <?php while($results = mysqli_fetch_array($sqlAllBillASC)) { ?>
                         <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
+                            <td><?php echo $results['BillId']; ?></td></td>
+                            <td><?php echo $results['TenantId']; ?></td>
+                            <td><?php echo $results['Total']; ?></td>
+                            <td><?php echo $results['CalculationDate']; ?></td>
+                            <td><?php echo $results['DueDate']; ?></td>
                         </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
-                        <tr>
-                            <td>Rhaine Hdart Coldovero</td>
-                            <td>coldoverorhainehdart@gmail.com</td>
-                            <td>09999562694</td>
-                            <td>P100</td>
-                            <td>P5000</td>
-                            <td>December 24, 2024</td>
-                        </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>
