@@ -1,16 +1,22 @@
 <?php
 require('./database.php');
+session_start();
 
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 
-$queryTenants = "SELECT * FROM tenant";
-$sqlTenants = mysqli_query($connection, $queryTenants);
-
-$queryTenantsUnique = "SELECT DISTINCT TenantId FROM tenant";
-$sqlTenantsUnique = mysqli_query($connection, $queryTenantsUnique);
+if (!isset($_SESSION['email'])) {
+    error_log("Session email not set. Redirecting to login.");
+    header("Location: loginpage.php");
+    exit();
+} else {
+    error_log("Session email is set: " . $_SESSION['email']);
+}
 
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
-    $ApartmentUnit = mysqli_real_escape_string($connection, $_POST['apartment_unit']);
+    $ApartmentUnit = $_POST['apartment_unit'];
     $LeaseDuration = $_POST['lease_duration'];
     $NumberOfMembers = $_POST['number_of_members'];
     $StatusTenant = $_POST['status_tenant'];
@@ -18,18 +24,71 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     $MoveInDate = $_POST['move_in_date'];
     $TotalIncome = $_POST['total_income'];
     $DateOfBirth = $_POST['date_of_birth'];
-    $Address = $_POST['address'];
     $Occupation = $_POST['occupation'];
     $EmergencyNumber = $_POST['emergency_number'];
     $EmergencyContactName = $_POST['emergency_contact_name'];
     $ContactNumber = $_POST['contact_number'];
+    $Address = $_POST['address'];
     $EmailAddress = $_POST['email_address'];
     $TenantName = $_POST['tenant_name'];
-    $TenandId = $_POST['tenant_id'];
 
+    $DateToday = date("Y-m-d");
+    $DateTodayT = date('Y-m-d', strtotime($DateToday . ' + 1 month'));
+    $Status = "Not yet";
+    $Password = password_hash("Hey", PASSWORD_DEFAULT);
+    $Image = null;
+    $DepAm = '10000';
+
+    $tenantsAdd = "INSERT INTO tenant (FullName, Email, Location, PhoneNumber, AccountCreationDate, Status, Password, tenantImage, DepositAmount, DepositPaidDate, DateOfBirth, TotalIncome, MoveInDate, Nationality, StatusTenant, NumberOfMembers, LeaseInDuration, ApartmentUnit, Occupation, EmergencyName, EmergencyContact) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+$stmt = $connection->prepare($tenantsAdd);
     
+// Check if prepare was successful
+if ($stmt === false) {
+    die("MySQL prepare error: " . $connection->error);
 }
 
+    $stmt->bind_param("sssisssbissssssiisssi", 
+    $TenantName, 
+    $EmailAddress, 
+    $Address, 
+    $ContactNumber, 
+    $DateToday, 
+    $Status, 
+    $Password, 
+    $Image, 
+    $DepAm, 
+    $DateTodayT, 
+    $DateOfBirth, 
+    $TotalIncome, 
+    $MoveInDate, 
+    $Nationality, 
+    $StatusTenant, 
+    $NumberOfMembers, 
+    $ApartmentUnit, 
+    $LeaseDuration, 
+    $Occupation, 
+    $EmergencyContactName, 
+    $EmergencyNumber
+);
+    
+    if ($stmt->execute()) {
+        echo "Tenant added successfully!";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    // Close the statement and connection
+    $stmt->close();
+    mysqli_close($connection);
+}
+
+$queryTenants = "SELECT * FROM tenant";
+$sqlTenants = mysqli_query($connection, $queryTenants);
+
+$queryTenantsUnique = "SELECT DISTINCT TenantId FROM tenant";
+$sqlTenantsUnique = mysqli_query($connection, $queryTenantsUnique);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -670,7 +729,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                                 <?php } ?>
                             </select>
                             <input type="search" class="search" placeholder="Search">
-                            <input type="button" id="register-button" class="bluebutton" value="Register">
+                            <input type="submit" id="register-button" class="bluebutton" value="Register">
                             <input type="button" id="modify-button" class="bluebutton" value="Modify">
                             <input type="button" id="archive-button" class="bluebutton" value="Archive">
                             <input type="button" id="clear-button" class="bluebutton" value="Clear">
@@ -681,7 +740,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                     <div class="bottom-box1-first">
                         <div class="bottom-box1-label-input">
                             <p>ID</p>
-                            <input type="textbox" id="tenant_id" name="tenant_id" class="bottom-box1-text" placeholder="Type ID">
+                            <input type="textbox" id="tenant_id" name="tenant_id" class="bottom-box1-text" placeholder="Type ID" readonly> 
                         </div>
                         <div class="bottom-box1-label-input">
                             <p>Tenant Name</p>
@@ -1027,6 +1086,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
         </div>    
         
         <script>
+    document.getElementById('tenant_name').addEventListener('input', function(){
+        this.value = this.value.replace(/[^a-zA-Z. ]/g, ''); // Allow space
+
+});
+
+
             document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('select_tenant_id').addEventListener('change', function() {
         var select_tenant_id = this.value;
@@ -1431,30 +1496,47 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                 document.getElementById('register-button').addEventListener('click', async function(event){
-                    const ApartmentUnit = document.getElementById('apartment_unit');
-                    const LeaseDuration = document.getElementById('lease_duration');
-                    const NumberOfMembers = document.getElementById('number_of_members');
-                    const StatusTenant = document.getElementById('status_tenant');
-                    const Nationality = document.getElementById('nationality');
-                    const MoveInDate = document.getElementById('move_in_date');
-                    const TotalIncome = document.getElementById('total_income');
-                    const DateOfBirth = document.getElementById('date_of_birth');
-                    const Address = document.getElementById('address');
-                    const Occupation = document.getElementById('occupation');
-                    const EmergencyNumber = document.getElementById('emergency_number');
-                    const EmergencyContactName = document.getElementById('emergency_contact_name');
-                    const ContactNumber = document.getElementById('contact_number');
-                    const EmailAddress = document.getElementById('email_address');
-                    const TenantName = document.getElementById('tenant_name');
-                    const TenandId = document.getElementById('tenant_id');
-                  
-                    if(!ApartmentUnit || !LeaseDuration || !NumberOfMembers || !StatusTenant || !Nationality || !MoveInDate || !TotalIncome || !DateOfBirth || !Address || !Occupation || !EmergencyNumber || !EmergencyContactName || !ContactNumber || !EmailAddress || !TenantName || !TenandId){
-                    alert('Please fill in all fields!');
-                    return;
+                    event.preventDefault();
+
+                    function validateTenantForm() {
+                        const ApartmentUnit = document.getElementById('apartment_unit');
+                        const LeaseDuration = document.getElementById('lease_duration');
+                        const NumberOfMembers = document.getElementById('number_of_members');
+                        const StatusTenant = document.getElementById('status_tenant');
+                        const Nationality = document.getElementById('nationality');
+                        const MoveInDate = document.getElementById('move_in_date');
+                        const TotalIncome = document.getElementById('total_income');
+                        const DateOfBirth = document.getElementById('date_of_birth');
+                        const Address = document.getElementById('address');
+                        const Occupation = document.getElementById('occupation');
+                        const EmergencyNumber = document.getElementById('emergency_number');
+                        const EmergencyContactName = document.getElementById('emergency_contact_name');
+                        const ContactNumber = document.getElementById('contact_number');
+                        const EmailAddress = document.getElementById('email_address');
+                        const TenantName = document.getElementById('tenant_name');
+                        const TenantId = document.getElementById('tenant_id');
+                        const ID = document.getElementById('select_tenant_id');
+                    
+                    if(ID.value !== "nothing"){
+                        alert('Deselect an ID first!');
+                        return;
                     }
 
-                    if(confirm('Are you sure you want to record this tenant?')){
-                        const form = new formData(document.getElementById('tenant-form'));
+                        if (!ApartmentUnit.value || !LeaseDuration.value || !NumberOfMembers.value || !StatusTenant.value || !Nationality.value || !MoveInDate.value || !TotalIncome.value || !DateOfBirth.value || !Address.value || !Occupation.value || !EmergencyNumber.value || !EmergencyContactName.value || !ContactNumber.value || !EmailAddress.value || !TenantName.value) {
+                            alert('Please fill in all fields!');
+                            return;
+                        }
+                        return true;
+                    }
+
+                    if (!validateTenantForm()) {
+                        return;
+                    }
+
+                
+
+                    if(confirm("Are you sure you want to record this tenant?")) {
+                        const form = new FormData(document.getElementById('tenant-form'));
 
                         try {
                         const response = await fetch('tenants.php', {
@@ -1462,15 +1544,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             body: form
                         });    
 
-                        if(response.ok){
-                            alert('recorded successfully');
+                        if (response.ok){
+                            alert('Tenant added successfully!');
+                            document.getElementById('tenant-form').reset();
                         } else{
                             const errorText = await response.text();
-                console.error("Error:", errorText);
-                alert("There was an error recording the tenant.");
-                        }
-                            
-                            
+                            console.error("Error:", errorText);
+                            alert("There was an error recording the tenant.");
+                        } 
                         } catch (error) {
                             console.error("Fetch error:", error);
                             alert("There was a network error.");
@@ -1478,7 +1559,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
 
-        
+                
+                    
+                const ID = document.getElementById('select_tenant_id');
+                const TenantId = document.getElementById('tenant_id');
+
+                    ID.addEventListener('input', function(){
+                        if(this.value === "nothing"){
+                            TenantId.value = '';
+                        }
+                    });
+
             </script>
 </body>
 </html>
