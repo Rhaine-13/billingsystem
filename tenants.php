@@ -1,8 +1,34 @@
 <?php
 require('./database.php');
 
+
 $queryTenants = "SELECT * FROM tenant";
 $sqlTenants = mysqli_query($connection, $queryTenants);
+
+$queryTenantsUnique = "SELECT DISTINCT TenantId FROM tenant";
+$sqlTenantsUnique = mysqli_query($connection, $queryTenantsUnique);
+
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+
+    $ApartmentUnit = mysqli_real_escape_string($connection, $_POST['apartment_unit']);
+    $LeaseDuration = $_POST['lease_duration'];
+    $NumberOfMembers = $_POST['number_of_members'];
+    $StatusTenant = $_POST['status_tenant'];
+    $Nationality = $_POST['nationality'];
+    $MoveInDate = $_POST['move_in_date'];
+    $TotalIncome = $_POST['total_income'];
+    $DateOfBirth = $_POST['date_of_birth'];
+    $Address = $_POST['address'];
+    $Occupation = $_POST['occupation'];
+    $EmergencyNumber = $_POST['emergency_number'];
+    $EmergencyContactName = $_POST['emergency_contact_name'];
+    $ContactNumber = $_POST['contact_number'];
+    $EmailAddress = $_POST['email_address'];
+    $TenantName = $_POST['tenant_name'];
+    $TenandId = $_POST['tenant_id'];
+
+    
+}
 
 ?>
 <!DOCTYPE html>
@@ -634,13 +660,20 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
         <div class="body-content">
             <div class="content-box box1">
                 <div class="top-box1">
+                    <form id="tenant-form" class="tenant-form" method="post" action="tenants.php">
                     <p class="panel-title">Manage Tenants</p>
                         <div class="four">
+                            <select class="search" id="select_tenant_id">
+                                <option value="nothing">Select Tenant ID</option>
+                                <?php while($results = mysqli_fetch_array($sqlTenantsUnique)) { ?>
+                                <option value="<?php echo $results['TenantId']; ?>"><?php echo $results['TenantId']; ?></option>
+                                <?php } ?>
+                            </select>
                             <input type="search" class="search" placeholder="Search">
-                            <input type="button" class="bluebutton" value="Register">
-                            <input type="button" class="bluebutton" value="Modify">
-                            <input type="button" class="bluebutton" value="Archive">
-                            <input type="button" class="bluebutton" value="Clear">
+                            <input type="button" id="register-button" class="bluebutton" value="Register">
+                            <input type="button" id="modify-button" class="bluebutton" value="Modify">
+                            <input type="button" id="archive-button" class="bluebutton" value="Archive">
+                            <input type="button" id="clear-button" class="bluebutton" value="Clear">
                         </div>
                 </div>
 
@@ -648,34 +681,34 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                     <div class="bottom-box1-first">
                         <div class="bottom-box1-label-input">
                             <p>ID</p>
-                            <input type="textbox" class="bottom-box1-text" placeholder="Type ID">
+                            <input type="textbox" id="tenant_id" name="tenant_id" class="bottom-box1-text" placeholder="Type ID">
                         </div>
                         <div class="bottom-box1-label-input">
                             <p>Tenant Name</p>
-                            <input type="textbox" class="bottom-box1-text" placeholder="Type Tenant Name">
+                            <input type="textbox" id="tenant_name" name="tenant_name" class="bottom-box1-text" placeholder="Type Tenant Name">
                         </div>
                         <div class="bottom-box1-label-input-half">
                             <p>Email Address</p>
-                            <input type="textbox" class="bottom-box1-text" placeholder="Type Email Address" id="email">
+                            <input type="textbox" id="email_address" name="email_address" class="bottom-box1-text" placeholder="Type Email Address" id="email">
                         </div>
                         <div class="bottom-box1-label-input-half">
                             <p>Contact Number</p>
-                            <input type="number" class="bottom-box1-text" id="contact-number" placeholder="Type Contact Number" maxlength="11">
+                            <input type="number" id="contact_number" name="contact_number" class="bottom-box1-text" id="contact-number" placeholder="Type Contact Number" maxlength="11">
                         </div>
                     </div>
 
                     <div class="bottom-box1-first">
                         <div class="bottom-box1-label-input-half">
                             <p>Emergency Contact Name</p>
-                            <input type="textbox" class="bottom-box1-text" placeholder="Type Contact Name">
+                            <input type="textbox" id="emergency_contact_name" name="emergency_contact_name" class="bottom-box1-text" placeholder="Type Contact Name">
                         </div>
                         <div class="bottom-box1-label-input-half">
                             <p>Emergency Number</p>
-                            <input type="number" class="bottom-box1-text" placeholder="Type Contact Name" id="emergencycontactnumber" maxlength="11"> 
+                            <input type="number" id="emergency_number" name="emergency_number" class="bottom-box1-text" placeholder="Type Contact Name" id="emergencycontactnumber" maxlength="11"> 
                         </div>
                         <div class="bottom-box1-label-input-occupation">
                             <p>Occupation</p>
-                            <select class="bottom-box1-text" placeholder="Type Occupation" id="selectOccupation">
+                            <select class="bottom-box1-text" id="occupation" name="occupation" placeholder="Type Occupation" id="selectOccupation">
                                 <option value="" disabled selected>Select Occupation</option>
                                 <option value="Others">Others (Type)</option>
                                 <option value="Software Engineer">Software Engineer</option>
@@ -865,16 +898,16 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                         </div>
                         <div class="bottom-box1-label-input-half">
                             <p>Address</p>
-        <input type="text" id="address" class="address-input" placeholder="Type Address">
+        <input type="text" id="address" name="address" class="address-input" placeholder="Type Address">
         <div id="suggestions" class="suggestions" style="display: none;"></div>
                         </div>
                         <div class="bottom-box1-label-input-half">
                             <p>Date of Birth</p>
-                            <input type="date" class="bottom-box1-text">
+                            <input type="date" id="date_of_birth" name="date_of_birth" class="bottom-box1-text">
                         </div>
                         <div class="bottom-box1-label-input">
                             <p>Total Income</p>
-                            <select class="bottom-box1-text">
+                            <select class="bottom-box1-text" id="total_income" name="total_income">
                                 <option value="" disabled selected>Select Total Income Range</option>
                                 <option value="less-than-10000">Less than ₱10,000</option>
                                 <option value="10000-25000">₱10,000 - ₱25,000</option>
@@ -888,11 +921,11 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                     <div class="bottom-box1-first">
                         <div class="bottom-box1-label-input-half">
                             <p>Move-in Date</p>
-                            <input type="date" class="bottom-box1-text" placeholder="Type Move-in Date">
+                            <input type="date" class="bottom-box1-text" id="move_in_date" name="move_in_date" placeholder="Type Move-in Date">
                         </div>
                         <div class="bottom-box1-label-input">
                             <p>Nationality</p>
-                            <select class="bottom-box1-text" placeholder="Type Status">
+                            <select class="bottom-box1-text" id="nationality" name="nationality" placeholder="Type Status">
                                 <option value="" disabled selected>Select Nationality</option>
                                 <option value="Filipino">Filipino</option>
                                 <option value="American">American</option>
@@ -920,7 +953,7 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                         </div>
                         <div class="bottom-box1-label-input">
                             <p>Status</p>
-                            <select class="bottom-box1-text" placeholder="Type Status">
+                            <select class="bottom-box1-text" id="status_tenant" name="status_tenant" placeholder="Type Status">
                                 <option value="" disabled selected>Select Status</option>
                                 <option value="Single">Single</option>
                                 <option value="Married">Married</option>
@@ -931,7 +964,7 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                         </div>
                         <div class="bottom-box1-label-input">
                             <p>Number of Members</p>
-                            <select class="bottom-box1-text" placeholder="Type Status">
+                            <select class="bottom-box1-text" id="number_of_members" name="number_of_members" placeholder="Type Status">
                                 <option value="" disabled selected>Select Number of Members</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
@@ -941,9 +974,9 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                             </select>
                         </div>
                         <div class="bottom-box1-label-input">
-                            <p>Lcubic-bezier(0.25, 0.1, 0.25, 1.0) Duration (in months)</p>
-                            <select class="bottom-box1-text" placeholder="Type Status">
-                                <option value="" disabled selected>Select Lcubic-bezier(0.25, 0.1, 0.25, 1.0) Duration</option>
+                            <p>Lease Duration (in months)</p>
+                            <select class="bottom-box1-text" id="lease_duration" name="lease_duration" placeholder="Type Status">
+                                <option value="" disabled selected>Select Lease Duration</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
@@ -953,7 +986,7 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                         </div>
                         <div class="bottom-box1-label-input">
                             <p>Apartment/Unit Number</p>
-                            <select class="bottom-box1-text" placeholder="Type Status">
+                            <select class="bottom-box1-text" id="apartment_unit" name="apartment_unit" placeholder="Type Status">
                                 <option value="" disabled selected>Choose Unit Number</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
@@ -963,6 +996,7 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
                             </select>
                         </div>
                     </div>
+                    </form>
                 </div>
             </div>
 
@@ -993,6 +1027,29 @@ $sqlTenants = mysqli_query($connection, $queryTenants);
         </div>    
         
         <script>
+            document.addEventListener('DOMContentLoaded', function(){
+    document.getElementById('select_tenant_id').addEventListener('change', function() {
+        var select_tenant_id = this.value;
+
+        if (select_tenant_id !== 'nothing') {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_tenant_data.php?select_tenant_id=' + select_tenant_id, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+
+                        document.getElementById('tenant_id').value = data.TenantId || '';
+                        document.getElementById('tenant_name').value = data.FullName || '';
+                        document.getElementById('email_address').value = data.Email || '';
+                    
+                } 
+            };
+            xhr.send();
+        }
+    });
+});
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('custom-alert-modal');
     const closeButton = document.getElementById('close-modal');
@@ -1338,6 +1395,90 @@ document.addEventListener('DOMContentLoaded', function () {
                     
 
                 });
+
+                document.getElementById('clear-button').addEventListener('click', function(){
+
+                    var clearFields = [
+                    document.getElementById('apartment_unit'),
+                    document.getElementById('lease_duration'),
+                    document.getElementById('number_of_members'),
+                    document.getElementById('status_tenant'),
+                    document.getElementById('nationality'),
+                    document.getElementById('move_in_date'),
+                    document.getElementById('total_income'),
+                    document.getElementById('date_of_birth'),
+                    document.getElementById('address'),
+                    document.getElementById('occupation'),
+                    document.getElementById('emergency_number'),
+                    document.getElementById('emergency_contact_name'),
+                    document.getElementById('contact_number'),
+                    document.getElementById('email_address'),
+                    document.getElementById('tenant_name'),
+                    document.getElementById('tenant_id')
+                    ];
+
+                    if(clearFields.every(inputs => inputs.value === '')){
+                        alert('Fields are empty!');
+                        return;
+                    }
+
+
+                    if(confirm("Are you sure want to clear the inputs?")){
+                        clearFields.forEach(inputs => inputs.value = '');
+                    }
+
+                });
+
+
+                document.getElementById('register-button').addEventListener('click', async function(event){
+                    const ApartmentUnit = document.getElementById('apartment_unit');
+                    const LeaseDuration = document.getElementById('lease_duration');
+                    const NumberOfMembers = document.getElementById('number_of_members');
+                    const StatusTenant = document.getElementById('status_tenant');
+                    const Nationality = document.getElementById('nationality');
+                    const MoveInDate = document.getElementById('move_in_date');
+                    const TotalIncome = document.getElementById('total_income');
+                    const DateOfBirth = document.getElementById('date_of_birth');
+                    const Address = document.getElementById('address');
+                    const Occupation = document.getElementById('occupation');
+                    const EmergencyNumber = document.getElementById('emergency_number');
+                    const EmergencyContactName = document.getElementById('emergency_contact_name');
+                    const ContactNumber = document.getElementById('contact_number');
+                    const EmailAddress = document.getElementById('email_address');
+                    const TenantName = document.getElementById('tenant_name');
+                    const TenandId = document.getElementById('tenant_id');
+                  
+                    if(!ApartmentUnit || !LeaseDuration || !NumberOfMembers || !StatusTenant || !Nationality || !MoveInDate || !TotalIncome || !DateOfBirth || !Address || !Occupation || !EmergencyNumber || !EmergencyContactName || !ContactNumber || !EmailAddress || !TenantName || !TenandId){
+                    alert('Please fill in all fields!');
+                    return;
+                    }
+
+                    if(confirm('Are you sure you want to record this tenant?')){
+                        const form = new formData(document.getElementById('tenant-form'));
+
+                        try {
+                        const response = await fetch('tenants.php', {
+                            method: 'POST',
+                            body: form
+                        });    
+
+                        if(response.ok){
+                            alert('recorded successfully');
+                        } else{
+                            const errorText = await response.text();
+                console.error("Error:", errorText);
+                alert("There was an error recording the tenant.");
+                        }
+                            
+                            
+                        } catch (error) {
+                            console.error("Fetch error:", error);
+                            alert("There was a network error.");
+                        }
+                    }
+                });
+
+        
             </script>
 </body>
 </html>

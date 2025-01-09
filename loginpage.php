@@ -13,37 +13,68 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $accountCreationDate = date('Y-m-d'); 
     $status = 'Pending'; 
     $profileImageData = null;
+    $depositAmount = null; 
+    $depositPaidDate = null; 
+    $dateOfBirth = null; 
+    $totalIncome = null; 
+    $moveInDate = null; 
+    $nationality = null; 
+    $statusTenant = null; 
+    $numberOfMembers = null; 
+    $leaseInDuration = null; 
+    $apartmentUnit = null; 
 
     if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == UPLOAD_ERR_OK) {
         $profileImageData = file_get_contents($_FILES['profile_image']['tmp_name']);
     }
 
    
-        $sql = "INSERT INTO tenant (FullName, Email, Location, PhoneNumber, AccountCreationDate, Status, Password, tenantImage) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        $stmt = $connection->prepare($sql);
+    $sql = "INSERT INTO tenant (FullName, Email, Location, PhoneNumber, AccountCreationDate, Status, Password, tenantImage, 
+    DepositAmount, DepositPaidDate, DateOfBirth, TotalIncome, MoveInDate, Nationality, StatusTenant, 
+    NumberOfMembers, LeaseInDuration, ApartmentUnit) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        if ($stmt) {
-            // Bind parameters
-            $stmt->bind_param("ssssssss", $fullname, $email, $address, $phoneNumber, $accountCreationDate, $status, $password, $profileImageData);
+$stmt = $connection->prepare($sql);
 
-            // Execute the statement
-            if ($stmt->execute()) {
-                $_SESSION['message'] = "Registration successful!";
-            } else {
-                $_SESSION['badmessage'] = "Error during execution: " . $stmt->error;
-            }
+if ($stmt) {
+// Bind parameters
+$stmt->bind_param("ssssssssbiiiiiiiii", 
+    $fullname, 
+    $email, 
+    $address, 
+    $phoneNumber, 
+    $accountCreationDate, 
+    $status, 
+    $password, 
+    $profileImageData, 
+    $depositAmount, 
+    $depositPaidDate, 
+    $dateOfBirth, 
+    $totalIncome, 
+    $moveInDate, 
+    $nationality, 
+    $statusTenant, 
+    $numberOfMembers, 
+    $leaseInDuration, 
+    $apartmentUnit
+);
 
-            // Close the statement
-            $stmt->close();
-        } else {
-            $_SESSION['badmessage'] = "SQL Error: " . $connection->error;
-        }
+// Execute the statement
+if ($stmt->execute()) {
+    $_SESSION['message'] = "Registration successful!";
+} else {
+    $_SESSION['badmessage'] = "Error during execution: " . $stmt->error;
+}
 
-    // Redirect to the same page to display messages
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
+// Close the statement
+$stmt->close();
+} else {
+$_SESSION['badmessage'] = "SQL Error: " . $connection->error;
+}
+
+// Redirect to the same page to display messages
+header("Location: " . $_SERVER['PHP_SELF']);
+exit();
 }
 ?>
 <!DOCTYPE html>
