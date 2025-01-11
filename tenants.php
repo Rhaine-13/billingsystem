@@ -49,7 +49,7 @@ if ($stmt === false) {
     die("MySQL prepare error: " . $connection->error);
 }
 
-    $stmt->bind_param("sssisssbissssssiisssi", 
+    $stmt->bind_param("sssisssbississsiisssi", 
     $TenantName, 
     $EmailAddress, 
     $Address, 
@@ -731,7 +731,7 @@ $sqlTenantsUnique = mysqli_query($connection, $queryTenantsUnique);
                             <input type="search" class="search" placeholder="Search">
                             <input type="submit" id="register-button" class="bluebutton" value="Register">
                             <input type="button" id="modify-button" class="bluebutton" value="Modify">
-                            <input type="button" id="archive-button" class="bluebutton" value="Archive">
+                            <input type="button" id="archive-button" class="bluebutton" value="End Lease">
                             <input type="button" id="clear-button" class="bluebutton" value="Clear">
                         </div>
                 </div>
@@ -1064,9 +1064,13 @@ $sqlTenantsUnique = mysqli_query($connection, $queryTenantsUnique);
                 <table class="summary-table">
                     <thead>
                         <tr>
+                            <th>Tenant ID</th>
                             <th>Tenant Name</th>
-                            <th>Email</th>
+                            <th>Email Address</th>
                             <th>Contact Number</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     <thead>
                     <tbody>
@@ -1546,6 +1550,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         if (response.ok){
                             alert('Tenant added successfully!');
+                            await updateTenantDropdown();
+                            await updateTenantTable();
                             document.getElementById('tenant-form').reset();
                         } else{
                             const errorText = await response.text();
@@ -1570,6 +1576,238 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     });
 
+
+
+                    document.getElementById('modify-button').addEventListener('click', async function(event) {
+    event.preventDefault();
+
+    const tenantId = document.getElementById('tenant_id').value;
+    const tenantName = document.getElementById('tenant_name').value;
+    const emailAddress = document.getElementById('email_address').value;
+    const contactNumber = document.getElementById('contact_number').value;
+    const emergencyContactName = document.getElementById('emergency_contact_name').value;
+    const emergencyNumber = document.getElementById('emergency_number').value;
+    const occupation = document.getElementById('occupation').value;
+    const address = document.getElementById('address').value;
+    const dateOfBirth = document.getElementById('date_of_birth').value;
+    const totalIncome = document.getElementById('total_income').value;
+    const moveInDate = document.getElementById('move_in_date').value;
+    const nationality = document.getElementById('nationality').value;
+    const statusTenant = document.getElementById('status_tenant').value;
+    const numberOfMembers = document.getElementById('number_of_members').value;
+    const leaseDuration = document.getElementById('lease_duration').value;
+    const apartmentUnit = document.getElementById('apartment_unit').value;
+
+    if (!tenantId) {
+        alert('Please select a tenant ID to modify.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('tenant_id', tenantId);
+    formData.append('tenant_name', tenantName);
+    formData.append('email_address', emailAddress);
+    formData.append('contact_number', contactNumber);
+    formData.append('emergency_contact_name', emergencyContactName);
+    formData.append('emergency_number', emergencyNumber);
+    formData.append('occupation', occupation);
+    formData.append('address', address);
+    formData.append('date_of_birth', dateOfBirth);
+    formData.append('total_income', totalIncome);
+    formData.append('move_in_date', moveInDate);
+    formData.append('nationality', nationality);
+    formData.append('status_tenant', statusTenant);
+    formData.append('number_of_members', numberOfMembers);
+    formData.append('lease_duration', leaseDuration);
+    formData.append('apartment_unit', apartmentUnit);
+
+    try {
+        const response = await fetch('update_tenant.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            alert('Tenant updated successfully!');
+            await updateTenantDropdown();
+            await updateTenantTable();
+        } else {
+            const errorText = await response.text();
+            console.error("Error:", errorText);
+            alert("There was an error updating the tenant.");
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        alert("There was a network error.");
+    }
+});
+
+document.getElementById('archive-button').addEventListener('click', async function(event) {
+    event.preventDefault();
+
+    const tenantId = document.getElementById('tenant_id').value;
+
+    if (!tenantId) {
+        alert('Please select a tenant ID to delete.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('tenant_id', tenantId);
+
+    try {
+        const response = await fetch('delete_tenant.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            alert('Tenant deleted successfully!');
+            // Optionally reset the form or update the UI
+            document.getElementById('tenant_id').value = ''; // Clear the tenant ID input
+            await updateTenantDropdown();
+            await updateTenantTable();
+        } else {
+            const errorText = await response.text();
+            console.error("Error:", errorText);
+            alert("There was an error deleting the tenant.");
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        alert("There was a network error.");
+    }
+});
+
+
+async function updateTenantDropdown() {
+    try {
+        const response = await fetch('get_tenant_ids.php'); // Create this PHP file
+        const tenantIds = await response.json();
+
+        const selectTenantId = document.getElementById('select_tenant_id');
+        selectTenantId.innerHTML = '<option value="nothing">Select Tenant ID</option>'; // Reset the dropdown
+
+        tenantIds.forEach(tenant => {
+            const option = document.createElement('option');
+            option.value = tenant.TenantId;
+            option.textContent = tenant.TenantId;
+            selectTenantId.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error fetching tenant IDs:", error);
+    }
+}
+
+
+async function updateTenantTable() {
+    try {
+        const response = await fetch('get_tenants.php');
+        const tenants = await response.json();
+
+        const tbody = document.querySelector('.summary-table tbody');
+        tbody.innerHTML = ''; // Clear the existing table rows
+
+        tenants.forEach(tenant => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${tenant.TenantId}</td>
+                <td>${tenant.FullName}</td>
+                <td>${tenant.Email}</td>
+                <td>${tenant.PhoneNumber}</td>
+                <td>${tenant.Location}</td>
+                <td>${tenant.Status}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error fetching tenant data:", error);
+    }
+}
+
+
+/* Function to handle tenant updates and deletions, shorten way
+async function handleTenantAction(action) {
+    const tenantId = document.getElementById('tenant_id').value;
+
+    if (!tenantId) {
+        alert(`Please select a tenant ID to ${action}.`);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('tenant_id', tenantId);
+
+    // Add additional fields for update action
+    if (action === 'update') {
+        formData.append('tenant_name', document.getElementById('tenant_name').value);
+        formData.append('email_address', document.getElementById('email_address').value);
+        formData.append('contact_number', document.getElementById('contact_number').value);
+        formData.append('emergency_contact_name', document.getElementById('emergency_contact_name').value);
+        formData.append('emergency_number', document.getElementById('emergency_number').value);
+        formData.append('occupation', document.getElementById('occupation').value);
+        formData.append('address', document.getElementById('address').value);
+        formData.append('date_of_birth', document.getElementById('date_of_birth').value);
+        formData.append('total_income', document.getElementById('total_income').value);
+        formData.append('move_in_date', document.getElementById('move_in_date').value);
+        formData.append('nationality', document.getElementById('nationality').value);
+        formData.append('status_tenant', document.getElementById('status_tenant').value);
+        formData.append('number_of_members', document.getElementById('number_of_members').value);
+        formData.append('lease_duration', document.getElementById('lease_duration').value);
+        formData.append('apartment_unit', document.getElementById('apartment_unit').value);
+    }
+
+    try {
+        const response = await fetch(`${action}_tenant.php`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(`Tenant ${action}d successfully!`);
+            document.getElementById('tenant_id').value = ''; // Clear the tenant ID input
+            await updateTenantDropdown();
+        } else {
+            console.error("Error:", result.error);
+            alert(`There was an error ${action}ing the tenant.`);
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        alert("There was a network error.");
+    }
+}
+
+// Event listeners for buttons
+document.getElementById('modify-button').addEventListener('click', async function(event) {
+    event.preventDefault();
+    await handleTenantAction('update');
+});
+
+document.getElementById('archive-button').addEventListener('click', async function(event) {
+    event.preventDefault();
+    await handleTenantAction('delete');
+});
+
+// Function to update the tenant dropdown
+async function updateTenantDropdown() {
+    try {
+        const response = await fetch('get_tenant_ids.php');
+        const tenantIds = await response.json();
+
+        const selectTenantId = document.getElementById('select_tenant_id');
+        selectTenantId.innerHTML = '<option value="nothing">Select Tenant ID</option>'; // Reset the dropdown
+
+        tenantIds.forEach(tenant => {
+            const option = document.createElement('option');
+            option.value = tenant.TenantId;
+            option.textContent = tenant.TenantId;
+            selectTenantId.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error fetching tenant IDs:", error);
+    }
+} */
             </script>
 </body>
 </html>
